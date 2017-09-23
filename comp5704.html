@@ -27,14 +27,29 @@
 </table>
 
 <hr noshade="noshade">
-<h2><font color="#005128">Project Title: </font><font><font color="#005128">XRT 0.1.0 - Language-Agnostic Map-Reduce for Shared-Memory Systems</font></font></h2>
+<h2><font color="#005128">Project Title: </font><font><font color="#005128">XRT 0.1.0 - A Language-Agnostic Map-Reduce Runtime for Shared-Memory Systems</font></font></h2>
 
 <h2><font color="#005128">Name: Erik Selin<br>
 </font></h2>
 
 <hr noshade="noshade">
-<b><font color="#005128">Project Outline:</font></b> [at most
-1/2 page outline of what you intend to do]
+<b><font color="#005128">Project Outline: </font></b>
+Map-reduce is a restrictive programming model for writing data processing programs without the complexity of parallel programming.
+
+Motivated by BSP, MPI and other restrictive programming models, map-reduce was introduced by Google and popularized by Hadoop MapReduce.
+
+Hadoop MapReduce operates on networked commodity hardware but following its success multiple map-reduce runtimes have been developed for additional environments like GPUs, FGPAs, Coprocessors and shared-memory systems.
+
+Shared-memory systems are becoming increasingly adapt at data processing due to higher core-counts, greater memory capacity and improved secondary storage.
+
+Current map-reduce runtimes for shared-memory systems have high performance but suffers from being overly specialized and forcing programmers to write C++ which is not realistic for most engineering teams.
+
+XRT is a novel Hadoop streaming inspired map-reduce runtime for shared-memory systems built from the ground up to support language-agnostic map-reduce.
+
+Developed in Go, XRT offers a restrictive map-reduce programming model and focuses on operational simplicity, cross platform compatibility and industry readiness without sacrificing performance.
+
+The goals, concepts and internals of XRT version 0.1.0 will be introduced together with a comparative benchmark.
+
 <p><b><font color="#005128">Startup Paper: </font></b><a href="http://ieeexplore.ieee.org/document/7840854/">A Scalable and Composable Map-Reduce System</a></p>
 
 <p><b><font color="#005128">Deliverables:</font></b></p>
