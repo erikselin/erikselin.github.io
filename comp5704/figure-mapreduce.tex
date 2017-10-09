@@ -1,0 +1,82 @@
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[every node/.style={minimum height={0.75cm},minimum width={0.75cm},thick}]
+      \node (Map2) at (0,1.25) {Mapper 2};
+      \node (Map1) at (0,4) {Mapper 1};
+      \node (Map0) at (0,6.75) {Mapper 0};
+
+      \node[draw] (P20) at (4,2) { $p_2^0$ };
+      \node[draw] (P21) at (4,1.25) { $p_2^1$ };
+      \node[draw] (P22) at (4,0.5) { $p_2^2$ };
+      \node (M2) at (5.5,1.25) {merge};
+      \node (S20) at (2.8,2) {sort};
+      \node (S21) at (2.8,1.25) {sort};
+      \node (S22) at (2.8,0.5) {sort};
+      \node[draw,minimum height={2.25cm}] (P2) at (7, 1.25) { $p_2$ };
+      \node[draw,dotted,minimum height={2.5cm},minimum width={5.5cm}] at (4.75,1.25) {};
+
+      \node[draw] (P10) at (4,4.75) { $p_1^0$ };
+      \node[draw] (P11) at (4,4) { $p_1^1$ };
+      \node[draw] (P12) at (4,3.25) { $p_1^2$ };
+      \node (M1) at (5.5,4) {merge};
+      \node (S10) at (2.8,4.75) {sort};
+      \node (S11) at (2.8,4) {sort};
+      \node (S12) at (2.8,3.25) {sort};
+      \node[draw,minimum height={2.25cm}] (P1) at (7, 4) { $p_1$ };
+      \node[draw,dotted,minimum height={2.5cm},minimum width={5.5cm}] at (4.75,4) {};
+
+      \node[draw] (P00) at (4,7.5) { $p_0^0$ };
+      \node[draw] (P01) at (4,6.75) { $p_0^1$ };
+      \node[draw] (P02) at (4,6) { $p_0^2$ };
+      \node (M0) at (5.5,6.75) {merge};
+      \node (S00) at (2.8,7.5) {sort};
+      \node (S01) at (2.8,6.75) {sort};
+      \node (S02) at (2.8,6) {sort};
+      \node[draw,minimum height={2.25cm}] (P0) at (7, 6.75) { $p_0$ };
+      \node[draw,dotted,minimum height={2.5cm},minimum width={5.5cm}] at (4.75,6.75) {};
+
+      \node (R2) at (9.5,1.25) {Reducer 2};
+      \node (R1) at (9.5,4) {Reducer 1};
+      \node (R0) at (9.5,6.75) {Reducer 0};
+
+      \path [->](Map0.east) edge node {} (S00.west);
+      \path [->](Map0.east) edge node {} (S10.west);
+      \path [->](Map0.east) edge node {} (S20.west);
+      \path [->](Map1.east) edge node {} (S01.west);
+      \path [->](Map1.east) edge node {} (S11.west);
+      \path [->](Map1.east) edge node {} (S21.west);
+      \path [->](Map2.east) edge node {} (S02.west);
+      \path [->](Map2.east) edge node {} (S12.west);
+      \path [->](Map2.east) edge node {} (S22.west);
+
+      \path [->](S00.east) edge node {} (P00.west);
+      \path [->](S10.east) edge node {} (P10.west);
+      \path [->](S20.east) edge node {} (P20.west);
+      \path [->](S01.east) edge node {} (P01.west);
+      \path [->](S11.east) edge node {} (P11.west);
+      \path [->](S21.east) edge node {} (P21.west);
+      \path [->](S02.east) edge node {} (P02.west);
+      \path [->](S12.east) edge node {} (P12.west);
+      \path [->](S22.east) edge node {} (P22.west);
+
+      \path [->](P00.east) edge node {} (M0.north west);
+      \path [->](P01.east) edge node {} (M0.west);
+      \path [->](P02.east) edge node {} (M0.south west);
+      \path [->](P10.east) edge node {} (M1.north west);
+      \path [->](P11.east) edge node {} (M1.west);
+      \path [->](P12.east) edge node {} (M1.south west);
+      \path [->](P20.east) edge node {} (M2.north west);
+      \path [->](P21.east) edge node {} (M2.west);
+      \path [->](P22.east) edge node {} (M2.south west);
+
+      \path [->](M0.east) edge node {} (P0.west);
+      \path [->](M1.east) edge node {} (P1.west);
+      \path [->](M2.east) edge node {} (P2.west);
+
+      \path [->](P0.east) edge node {} (R0.west);
+      \path [->](P1.east) edge node {} (R1.west);
+      \path [->](P2.east) edge node {} (R2.west);
+  \end{tikzpicture}
+  \caption{Classical MapReduce programming model.}
+  \label{fig:mapreduce}
+\end{figure}

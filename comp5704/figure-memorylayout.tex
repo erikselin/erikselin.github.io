@@ -1,0 +1,20 @@
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}[every node/.style={minimum height={1.5cm},minimum width={1.5cm},thick}]
+    \matrix[row sep=1mm, column sep=1mm] (m)
+    {
+      \node { Mapper 0 }; & \node[draw] { $p_0^0$ }; & \node[draw] (c1) { $p_1^0$ }; & \node[draw] { $p_2^0$}; \\
+      \node (r1) { Mapper 1 }; & \node[draw] { $p_0^1$ }; & \node[draw] { $p_1^1$ }; & \node[draw] { $p_2^1$ }; \\
+      \node { Mapper 2 }; & \node[draw] (node0) { $p_0^2$}; & \node[draw] (node1) { $p_1^2$ }; & \node[draw] (node2) { $p_2^2$ }; \\
+    };
+
+    \node[below=1.75cm of node0.north,minimum height=0cm] {Reducer 0};
+    \node[below=1.75cm of node1.north,minimum height=0cm] {Reducer 1};
+    \node[below=1.75cm of node2.north,minimum height=0cm] {Reducer 2};
+
+    \node[below=-1.1mm of c1.north,draw,dotted,minimum height=5.75cm,minimum width=1.6cm] {};
+    \node[below right=-0.5mm and -0.9cm of r1.north,draw,dotted,minimum height=1.6cm,minimum width=6.65cm] {};
+  \end{tikzpicture}
+  \caption{Memory layout in shared-memory MapReduce runtimes.}
+  \label{fig:memorylayout}
+\end{figure}
