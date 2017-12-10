@@ -33,7 +33,13 @@ Ottawa, Canada K1N 6N5 \\
 \begin{@twocolumnfalse}
 \maketitle
 \begin{abstract}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis lacinia faucibus velit vitae elementum. Nam dapibus, est et finibus ultrices, sapien ligula tempor neque, quis elementum est sapien sit amet est. Integer pretium enim bibendum, condimentum enim quis, vestibulum enim. Nullam luctus pretium auctor. Vestibulum quis pharetra odio, in ornare nulla. Suspendisse potenti. Proin fringilla commodo pellentesque. Nam et malesuada ligula, non mattis justo. Maecenas fringilla lobortis ultrices. Vestibulum posuere pellentesque urna, ac feugiat est.
+Data processing on shared-memory systems is becoming increasingly attractive due to the advent of high core-count CPUs.
+The MapReduce programing paradigm is a great fit for data processing on high core-count shared-memory systems however there is currently no industry ready runtime available.
+We present XRT, a novel MapReduce runtime which is designed from the ground up to be language-agnostic, fast and pedantic about resource usage.
+XRT Mapper and reducer programs can be written in any language since communication with the runtime is done over the standard streams.
+In addition, XRT is capable of achieving high performance by only using memory for intermediate data storage while maintaining the capacity to fall back to disk based data structures if the intermediate data is too large.
+In this paper we show that XRT is capable of achieving excellent speedup as worker counts are increased while simultaneously offering a very pleasant language-agnostic programming experience.
+We believe that XRT is quickly approaching a industry ready state and enables high-performance MapReduce on shared-memory systems.
 \end{abstract}
 \
 \end{@twocolumnfalse}
@@ -44,8 +50,8 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis lacinia faucibus v
 % ############################################################################
 
 MapReduce is a restrictive programming model used to write efficient and highly parallel data processing programs without having to deal with the complexities of parallel programming.
-Historically, per-server parallelism has been low which is why MapReduce is generally run on clusters of networked servers using the Hadoop MapReduce runtime.
-However, in recent years server core-counts have increased and today 128-core shared-memory system are generaly available.
+In general, clusters of networked servers is used to run MapReduce since individual servers have historically had fairly low core-counts.
+However, in recent years server core-counts have increased and today 128-core shared-memory system are generally available.
 
 We believe that shared-memory systems with high core-counts provides a excellent environment for modern data processing and that adoption is currently hindered by the lack of a simple to use high performing runtime.
 Complexities associated with cluster computing can be avoided in shared-memory systems resulting in simpler operations while per-core performance is better since datasets that fit in memory can be processed without disk or network access.
@@ -269,10 +275,10 @@ To keep usage simple and enable truly language-agnostic support XRT is built to 
 Widely used formats like csv, tsv and newline delimited json can all be used.
 On a high level XRT follows the classical MapReduce model illustrated in Figure \ref{fig:mapreduce} and programming MapReduce jobs involves writting mapper and reducer programs.
 
-XRT mapper programs read records from stdin and writes newline-delimited worker-id/record pairs to stdout.
+XRT mapper programs read newline-delimited records from stdin and writes newline-delimited worker-id/record pairs to stdout.
 The XRT runtime shuffles the records by the associated worker-id and then sorts the records before passing them to the reducer program.
 
-XRT reducer programs read sorted records from stdin and writes newline-delimited records to stdout which in turn becomes the output of the MapReduce job.
+XRT reducer programs read sorted newline-delimited records from stdin and writes newline-delimited records to stdout which in turn becomes the output of the MapReduce job.
 
 % ----------------------------------------------------------------------------
 \subsection{Examples} \label{sec:examples}
@@ -287,7 +293,7 @@ Here are a few common MapReduce tasks to illustrate usage of the XRT MapReduce r
 \bigskip
 \noindent
 \textbf{word-count:} The mapper program reads words from stdin, assigns a worker-id to each word to ensure that all words that are the same end up on the same reducer.
-The reducer program reads a word from stdin and keeps reading as long as new words is the same as the first word while keeping a count of how many records have been read.
+The reducer program reads a word from stdin and keeps reading as long as new words is the same as the first word while keeping a count of how many words have been read.
 When a new word is read from stdin that does not match the first word the reducer writes the current word and the associated count to stdout and then restarts the process with the new word.
 
 \bigskip
@@ -331,11 +337,11 @@ During spilling the full buffer is sorted, written out to disk and then cleared.
 \noindent
 \textbf{sort:} Sort starts once all mapper programs have terminated.
 It first sorts the in memory records by only moving the record pointers, reducing the number of bytes that need to be moved around while also making it possible to sort in place.
-If any buffers spilled sort uses a external heap-based n-way merge to create a single sorted file for each buffer.
+If any buffers spilled then sort uses a external heap-based n-way merge to create a single sorted file for each buffer.
 
 \bigskip
 \noindent
-\textbf{merging:} Merging grabs all buffers and all spilled files associated with a reducer and using a heap-based n-way merge creates a single sorted stream of records.
+\textbf{merging:} Merging grabs all in-memory buffers and all on-disk spill files associated with a reducer and using a heap-based n-way merge creates a single sorted stream of records.
 
 \bigskip
 \noindent
@@ -345,7 +351,7 @@ The reducer program processes the records and writes them to stdout.
 \bigskip
 \noindent
 \textbf{output:} The records written to stdout by the reducer programs are written to a temporary location on disk.
-Once all reducer programs have finished succesfully XRT commits the data by moving the temporary data to the target output directory.
+Once all reducer programs have finished successfully XRT commits the data by moving the temporary data to the target output directory.
 
 % ############################################################################
 \section{Performance} \label{sec:perf}
@@ -361,7 +367,7 @@ Execution times were collected using the linux time command.
 
 \subsection{Dataset}
 
-A artifical 50GB dataset was generated and contained 500 million 100-byte records.
+A artificial 50GB dataset was generated and contained 500 million 100-byte records.
 The dataset was split into 50, 1GB files each containing 10 million 100-byte records.
 The records were split into a 5-byte key followed by a tab-character followed by a 93-byte payload followed by a newline-character.
 Every byte in every record was randomly picked from the sequence of lowercase characters in the range a-z.
@@ -376,7 +382,7 @@ We ran the 3 examples from Section \ref{sec:examples} as our benchmarks with the
 
 \bigskip
 \noindent
-\textbf{word-count:} The mapper program reads records from stdin and sets the worker-id for each record using a hash of the key modulo the number of workers.
+\textbf{word-count:} The mapper program reads records from stdin and sets the worker-id for each record using a hash of the 5-byte key modulo the number of workers.
 The mapper program only emits the worker-id/key pair as we are only interested in a count by key.
 The reducer program counts the number of times a key is observed and emits the current key and current count to stdout when a new key is read from stdin.
 
@@ -385,21 +391,21 @@ The reducer program counts the number of times a key is observed and emits the c
 \textbf{sort:} The mapper program reads records from stdin and assigns a worker-id to each record ensuring that records assigned to worker\textsubscript{i} are guaranteed to be smaller then records assigned to worker\textsubscript{i+1}.
 The reducer program reads records from stdin and simply write them to stdout directly as they are already in sorted order.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=8cm]{graph.eps}
-  \caption{Speedup of XRT as worker counts are increased}
-  \label{fig:perf}
-\end{figure}
-
 \subsection{Results}
 
 \subsubsection{Baseline}
 
 For the first performance evaluation each of the benchmarks were implemented as optimal and sequential non-MapReduce programs.
 These baseline implementations where then compared with the performance of the XRT MapReduce implementations.
-When number of XRT workers was set to 1 the baseline implementations where on average 20\% faster due to the overhead incured by the XRT runtime.
+When number of XRT workers was set to 1 the baseline implementations where on average 20\% faster due to the overhead incurred by the XRT runtime.
 When the number of workers was increased to 2 XRT was able to completely outperform the optimal sequential implementations.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=8cm]{graph.eps}
+  \caption{Speedup of XRT as worker counts are increased}
+  \label{fig:perf}
+\end{figure}
 
 \subsubsection{Speedup}
 
@@ -408,7 +414,7 @@ The results show that we are approximately doubling the speedup as we double the
 In some cases we are even able to more then double the speedup as we are effectively moving computation out of Python (a dynamic, slower language) to Go (a compiled, high performing language).
 The job with the lowest speedup is string-search which also happens to be the least computationally heavy job and thus is likely bottlenecked by the fact that our benchmarking system only has a single SSD.
 
-We also see that as we approach 32 workers we have a bit of a reduction in speedup accross all benchmarks.
+We also see that as we approach 32 workers we have a bit of a reduction in speedup across all benchmarks.
 Again this is likely due to the single SSD becoming a bottleneck.
 
 % ############################################################################
@@ -420,12 +426,12 @@ The implementation details of XRT were explored and through our benchmarks we ha
 
 Furthermore, we have shown that XRT addresses the perceived shortcomings and lacks in the shared-memory MapReduce community.
 XRT is language-agnostic and memory first but can process datasets that do not fit in memory by having first class support for spilling to disk.
-In addition, we believe XRT to be heading towards a industry-ready state with easy development, deployment and managment as well as a robust implementation.
+In addition, we believe XRT to be heading towards a industry-ready state with easy development, deployment and management as well as a robust implementation.
 
 We intend to continue optimizing the various internal components of XRT and run further benchmarks on even larger shared-memory systems.
 In particular, we are interested in running benchmarks on shared-memory systems with multiple RAID mounted SSD's to address the slight slowdowns we observed in our performance evaluation.
 
-Overall, we believe that we have shown that language-agnostic shared-memory MapReduce is possible and extremely attractive with the advent of high core-count shared-memory systems.
+Overall, we believe that we have shown that language-agnostic shared-memory MapReduce is possible and extremely attractive following the advent of high core-count shared-memory systems.
 
 % ############################################################################
 % Bibliography
@@ -436,3 +442,4 @@ Overall, we believe that we have shown that language-agnostic shared-memory MapR
 % ============================================================================
 
 \end{document}
+
