@@ -34,10 +34,11 @@ Ottawa, Canada K1N 6N5 \\
 \maketitle
 \begin{abstract}
 Data processing on shared-memory systems is becoming increasingly attractive due to the advent of high core-count CPUs.
-The MapReduce programing paradigm is a great fit for data processing on high core-count shared-memory systems however there is currently no industry ready runtime available.
-We present XRT, a novel MapReduce runtime which is designed from the ground up to be language-agnostic, fast and pedantic about resource usage.
+The popular MapReduce programing paradigm is a great model for parallel data processing on high core-count shared-memory systems.
+However, there is currently a lack of simple industry ready runtimes.
+We present XRT, a novel MapReduce runtime for shared-memory systems which is designed from the ground up to be language-agnostic, fast and pedantic about resource usage.
 XRT Mapper and reducer programs can be written in any language since communication with the runtime is done over the standard streams.
-In addition, XRT is capable of achieving high performance by only using memory for intermediate data storage while maintaining the capacity to fall back to disk based data structures if the intermediate data is too large.
+In addition, XRT is capable of achieving high performance by only using memory for intermediate data storage while providing the capacity to automatically fall back to disk based data structures if the intermediate data is too large.
 In this paper we show that XRT is capable of achieving excellent speedup as worker counts are increased while simultaneously offering a very pleasant language-agnostic programming experience.
 We believe that XRT is quickly approaching a industry ready state and enables high-performance MapReduce on shared-memory systems.
 \end{abstract}
@@ -50,8 +51,8 @@ We believe that XRT is quickly approaching a industry ready state and enables hi
 % ############################################################################
 
 MapReduce is a restrictive programming model used to write efficient and highly parallel data processing programs without having to deal with the complexities of parallel programming.
-In general, clusters of networked servers is used to run MapReduce since individual servers have historically had fairly low core-counts.
-However, in recent years server core-counts have increased and today 128-core shared-memory system are generally available.
+In general, clusters of networked servers is used to run MapReduce since individual servers have historically had fairly low core-counts \cite{GoogleMapReduce} \cite{Hadoop}.
+However, in recent years server core-counts have increased and today 128-core shared-memory system are generally available \cite{AWS}.
 
 We believe that shared-memory systems with high core-counts provides a excellent environment for modern data processing and that adoption is currently hindered by the lack of a simple to use high performing runtime.
 Complexities associated with cluster computing can be avoided in shared-memory systems resulting in simpler operations while per-core performance is better since datasets that fit in memory can be processed without disk or network access.
@@ -220,8 +221,8 @@ memory allocation calls compared to Phoenix and other shared-memory runtimes
 Usage: xrt [--help] [--version] <options>
 
 Resource options:
-  --workers <n>    set the number of workers to <n> (default: 4)
-  --memory <m>     set the amount of allocated memory (default: 256m)
+  --workers <num>  set the number of workers to <n> (default: 4)
+  --memory <mem>   set the amount of allocated memory (default: 256m)
   --tempdir <dir>  set the temporary directory (default: system temporary directory)
 
 Job options:
@@ -230,7 +231,7 @@ Job options:
   --reducer <cmd>     reducer command
   --output <dir>      output directory
 \end{lstlisting}
-\caption{Usage description of the XRT cli tool}
+\caption{XRT usage options}
 \label{fig:xrt}
 \end{figure*}
 
@@ -269,7 +270,7 @@ XRT 0.1.0 is the first release of the XRT MapReduce runtime for shared-memory sy
 The objective of XRT is to offer a simple, high-performance, resource-aware and language-agnostic MapReduce runtime.
 Internally XRT is based on ideas developed in shared-memory MapReduce systems like Phoenix \cite{Phoenix} combined with language-agnostic concepts from Hadoop Streaming \cite{HadoopStreaming}.
 In addition, it explores novel topics in the shared-memory MapReduce space like resource awareness and the ability to use secondary storage for datasets that do not fit in memory.
-XRT is being implemented in the Go language and Figure \ref{fig:xrt} shows the usage options of the XRT cli tool.
+XRT is being implemented in the Go language and Figure \ref{fig:xrt} shows the usage options of XRT.
 
 To keep usage simple and enable truly language-agnostic support XRT is built to operate on newline-delimited data.
 Widely used formats like csv, tsv and newline delimited json can all be used.
@@ -317,6 +318,7 @@ The XRT runtime enumerates the input files and assigns 64mb chunks from the inpu
 \noindent
 \textbf{mapper:} Mapper programs read newline-delimited records from stdin, processes the record, assigns a worker-id to each record and writes the worker-id/processed-record pair to stdout.
 The worker-id will be used by the runtime to shuffle the record to the appropriate reducer program.
+The number of mapper programs that will be started by the XRT runtime is determined by the number of workers configured.
 
 \bigskip
 \noindent
@@ -347,6 +349,7 @@ If any buffers spilled then sort uses a external heap-based n-way merge to creat
 \noindent
 \textbf{reducer:} Reducer programs read the sorted stream of records from the merging phase which are delivered to the reducer program over stdin.
 The reducer program processes the records and writes them to stdout.
+The number of reducer programs that will be started by the XRT runtime is determined by the number of workers configured.
 
 \bigskip
 \noindent
@@ -411,9 +414,7 @@ When the number of workers was increased to 2 XRT was able to completely outperf
 
 Figure \ref{fig:perf} shows the speedup of string-search, word-count and sort as the number of XRT workers is increased.
 The results show that we are approximately doubling the speedup as we double the core count which is precisely the kind of speedup that we're aiming to achieve.
-In some cases we are even able to more then double the speedup as we are effectively moving computation out of Python (a dynamic, slower language) to Go (a compiled, high performing language).
 The job with the lowest speedup is string-search which also happens to be the least computationally heavy job and thus is likely bottlenecked by the fact that our benchmarking system only has a single SSD.
-
 We also see that as we approach 32 workers we have a bit of a reduction in speedup across all benchmarks.
 Again this is likely due to the single SSD becoming a bottleneck.
 
@@ -430,6 +431,7 @@ In addition, we believe XRT to be heading towards a industry-ready state with ea
 
 We intend to continue optimizing the various internal components of XRT and run further benchmarks on even larger shared-memory systems.
 In particular, we are interested in running benchmarks on shared-memory systems with multiple RAID mounted SSD's to address the slight slowdowns we observed in our performance evaluation.
+We are also intersted in exploring performance on skewed datasets as well as datasets which force XRT to spill to disk.
 
 Overall, we believe that we have shown that language-agnostic shared-memory MapReduce is possible and extremely attractive following the advent of high core-count shared-memory systems.
 

@@ -1,6 +1,9 @@
 LITERATURE_REVIEW := literature_review
+FINAL_PAPER := final_paper
 
-default:
+default: litrev presout
+
+litrev:
 	latex -draftmode ${LITERATURE_REVIEW}
 	bibtex ${LITERATURE_REVIEW}
 	latex -draftmode ${LITERATURE_REVIEW}
@@ -10,6 +13,17 @@ default:
 	rm ${LITERATURE_REVIEW}.blg
 	rm ${LITERATURE_REVIEW}.log
 	rm ${LITERATURE_REVIEW}.dvi
+
+presout:
+	latex -draftmode ${FINAL_PAPER}
+	bibtex ${FINAL_PAPER}
+	latex -draftmode ${FINAL_PAPER}
+	pdflatex ${FINAL_PAPER}
+	rm ${FINAL_PAPER}.aux
+	rm ${FINAL_PAPER}.bbl
+	rm ${FINAL_PAPER}.blg
+	rm ${FINAL_PAPER}.log
+	rm ${FINAL_PAPER}.dvi
 
 clean:
 	rm *.aux
